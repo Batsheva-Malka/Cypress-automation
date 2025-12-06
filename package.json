@@ -16,7 +16,12 @@
     "type": "git",
     "url": "git+https://github.com/Batsheva-Malka/Cypress-automation.git"
   },
-  "keywords": ["cypress", "e2e", "testing", "automation"],
+  "keywords": [
+    "cypress",
+    "e2e",
+    "testing",
+    "automation"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {

@@ -72,28 +72,64 @@ Cypress.Commands.add('clickCheckout', () => {
     cy.get('.checkout__button').click();
 });
 
+
 // Command to fill checkout form
 Cypress.Commands.add('fillCheckoutForm', (userData) => {
-    if (userData.email) cy.get('#email').clear().type(userData.email);
-    if (userData.firstName) cy.get('#shippingFirstNamedefault').clear().type(userData.firstName);
-    if (userData.lastName) cy.get('#shippingLastNamedefault').clear().type(userData.lastName);
-    if (userData.address) cy.get('#shippingAddressOnedefault').clear().type(userData.address);
-    if (userData.city) cy.get('#shippingAddressCitydefault').clear().type(userData.city);
+    // Wait for the entire form to be ready/enabled
+    cy.get('#email').should('be.enabled');
+    cy.get('#shippingFirstNamedefault').should('be.enabled');
+    cy.get('#shippingLastNamedefault').should('be.enabled');
     
+    // Now fill the form
+    if (userData.email) {
+        cy.get('#email').clear().type(userData.email);
+    }
+    
+    if (userData.firstName) {
+        cy.get('#shippingFirstNamedefault').clear().type(userData.firstName);
+    }
+    
+    if (userData.lastName) {
+        cy.get('#shippingLastNamedefault').clear().type(userData.lastName);
+    }
+    
+      if (userData.phone) {
+        cy.get('#shippingPhoneNumberdefault').should('be.enabled').clear().type(userData.phone);
+    }
+    // Address field may have autocomplete overlay
+    if (userData.address) {
+        cy.get('#shippingAddressOnedefault').should('be.enabled').clear({ force: true }).type(userData.address, { force: true });
+        
+        // Wait for autocomplete suggestions and select the one containing "123 Main Street Anx"
+        cy.get('.edq-global-intuitive-address-suggestion', { timeout: 5000 })
+          .should('be.visible')
+          .contains('123 Main Street Anx')
+          .click();
+        
+        // Wait for auto-fill to complete
+        cy.wait(1000);
+    }
+    
+    // City field may have autocomplete overlay
+    if (userData.city) {
+        cy.get('#shippingAddressCitydefault').should('be.enabled').clear({ force: true }).type(userData.city, { force: true });
+    }
+    
+    // Country/State have pointer-events: none
     if (userData.country) {
-        cy.get('#shippingCountrydefault').select(userData.country);
+        cy.get('#shippingCountrydefault').should('be.enabled').select(userData.country, { force: true });
     }
     
     if (userData.state) {
-        cy.get('#shippingStatedefault').select(userData.state);
-        cy.wait(500); // Wait for ZIP field to enable
+        cy.get('#shippingStatedefault').should('be.enabled').select(userData.state, { force: true });
     }
     
+    // ZIP is disabled until state is selected
     if (userData.zip) {
         cy.get('#shippingZipCodedefault').should('be.enabled').clear().type(userData.zip);
     }
     
-    if (userData.phone) cy.get('#shippingPhoneNumberdefault').clear().type(userData.phone);
+  
 });
 
 // Command to click continue to payment
