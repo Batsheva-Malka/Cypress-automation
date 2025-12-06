@@ -1,0 +1,27 @@
+{
+  "validUser": {
+    "email": "john.doe@example.com",
+    "firstName": "John",
+    "lastName": "Doe",
+    "address": "123 Main Street",
+    "city": "New Haven",
+    "country": "United States",
+    "state": "Connecticut",
+    "zip": "06512",
+    "phone": "2125551234"
+  },
+  "invalidEmails": [
+    "notanemail",
+    "@example.com",
+    "user@"
+  ],
+  "invalidZipCodes": [
+    "ABCDE",
+    "123"
+  ],
+  "categories": {
+    "headphones": "Headphones",
+    "speakers": "Speakers",
+    "earbuds": "Earbuds"
+  }
+}

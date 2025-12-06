@@ -1,0 +1,29 @@
+{
+  "name": "cypress-automation",
+  "version": "1.0.0",
+  "description": "Cypress E2E tests for Bose E-Commerce",
+  "main": "index.js",
+  "scripts": {
+    "test": "cypress run",
+    "test:headed": "cypress run --headed",
+    "test:chrome": "cypress run --browser chrome",
+    "test:firefox": "cypress run --browser firefox",
+    "test:cart": "cypress run --spec 'cypress/e2e/shoppingCartTest.cy.js'",
+    "test:checkout": "cypress run --spec 'cypress/e2e/checkoutFormTest.cy.js'",
+    "open": "cypress open"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Batsheva-Malka/Cypress-automation.git"
+  },
+  "keywords": ["cypress", "e2e", "testing", "automation"],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Batsheva-Malka/Cypress-automation/issues"
+  },
+  "homepage": "https://github.com/Batsheva-Malka/Cypress-automation#readme",
+  "dependencies": {
+    "cypress": "^15.7.1"
+  }
+}
