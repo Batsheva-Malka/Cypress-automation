@@ -42,7 +42,7 @@ describe('Bose E-Commerce - Shopping Cart Tests', () => {
                         // Log summary
                         cy.log('=== CART SUMMARY ===');
                         prices.forEach((price, i) => {
-                            cy.log(`Item ${i + 1}: $${price} x ${quantities[i]}`);
+                            cy.log(`Item ${i + 1}: $${price} x ${quantities[i]} = $${price * quantities[i]}`);
                         });
                         cy.log(`Calculated Total: $${calculatedTotal.toFixed(2)}`);
                         cy.log(`Website Total: $${websiteTotal.toFixed(2)}`);
@@ -50,6 +50,16 @@ describe('Bose E-Commerce - Shopping Cart Tests', () => {
                         // Validate totals match (within 1 cent tolerance)
                         expect(Math.abs(calculatedTotal - websiteTotal)).to.be.lessThan(0.01);
                         cy.log('✓ Cart total validation passed!');
+                        
+                        // Write to Excel
+                        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                        cy.writeToExcel({
+                            prices,
+                            quantities,
+                            calculatedTotal,
+                            websiteTotal,
+                            fileName: `CartPriceValidation_${timestamp}.xlsx`
+                        });
                     });
                 });
             });
