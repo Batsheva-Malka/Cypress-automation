@@ -88,28 +88,47 @@ Cypress.Commands.add('fillCheckoutForm', (userData) => {
       if (userData.phone) {
         cy.get('#shippingPhoneNumberdefault').should('be.enabled').clear().type(userData.phone);
     }
+    // if (userData.address) {
+    //     cy.get('#shippingAddressOnedefault').should('be.enabled').clear({ force: true }).type(userData.address, { force: true });
+        
+        // cy.get('.edq-global-intuitive-address-suggestion', { timeout: 5000 })
+        //   .should('be.visible')
+        //   .contains('123 Main Street Anx')
+        //   .click();
+        
+        // cy.wait(1000);
+        
+    // }
     if (userData.address) {
-        cy.get('#shippingAddressOnedefault').should('be.enabled').clear({ force: true }).type(userData.address, { force: true });
+    cy.get('#shippingAddressOnedefault').should('be.enabled').clear({ force: true }).type(userData.address, { force: true });
+    
+    cy.get('.edq-global-intuitive-address-suggestion', { timeout: 5000 })
+      .should('be.visible')
+      .contains('123 Main Street Anx')
+      .click();
+    
+    // Wait for autocomplete to fully populate all fields
+   cy.wait(3000); // Increased from 2000ms
         
-        cy.get('.edq-global-intuitive-address-suggestion', { timeout: 5000 })
-          .should('be.visible')
-          .contains('123 Main Street Anx')
-          .click();
+        // Verify the state was auto-filled
+        cy.get('#shippingStatedefault').should('have.class', 'has-value');
         
-        cy.wait(1000);
-    }
+        // Wait for any pending XHR requests to complete
+        cy.wait(500);
+}
     
-    if (userData.city) {
-        cy.get('#shippingAddressCitydefault').should('be.enabled').clear({ force: true }).type(userData.city, { force: true });
-    }
+    // if (userData.city) {
+    //     cy.get('#shippingAddressCitydefault').should('be.enabled').clear({ force: true }).type(userData.city, { force: true });
+    // }
     
-    if (userData.country) {
-        cy.get('#shippingCountrydefault').should('be.enabled').select(userData.country, { force: true });
-    }
+    // if (userData.country) {
+    //     cy.get('#shippingCountrydefault').should('be.enabled').select(userData.country, { force: true });
+    //     cy.wait(500); // Wait for state dropdown to populate
+    // }
     
-    if (userData.state) {
-        cy.get('#shippingStatedefault').should('be.enabled').select(userData.state, { force: true });
-    }
+    // if (userData.state) {
+    //     cy.get('#shippingStatedefault').should('be.enabled').select(userData.state, { force: true });
+    // }
     
     // // ZIP is disabled until state is selected
     // if (userData.zip) {
