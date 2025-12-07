@@ -3,14 +3,15 @@
 // Custom commands for Bose E-Commerce Testing
 // ***********************************************
 
-// Command to select a category from the shop menu
+const XLSX = require('xlsx');
+import path from 'path';
+
 Cypress.Commands.add('selectCategory', (categoryName) => {
     cy.get('.secondary-navigation__button')
       .contains(categoryName, { matchCase: false })
       .click();
 });
 
-// Command to add product to cart by index
 Cypress.Commands.add('addProductToCart', (productIndex = 0) => {
     cy.get('.product-tile-content')
       .eq(productIndex)
@@ -19,23 +20,20 @@ Cypress.Commands.add('addProductToCart', (productIndex = 0) => {
       .click();
 });
 
-// Command to open shopping cart
 Cypress.Commands.add('openCart', () => {
     cy.scrollTo('top');
     cy.get('.minicart-link').click();
     cy.get('.product-cart-wrapper.row').should('be.visible');
 });
 
-// Command to increase product quantity in cart
 Cypress.Commands.add('increaseQuantity', (itemIndex = 0) => {
     cy.get('.product-cart-wrapper.row')
       .eq(itemIndex)
       .find('.quantity__counter-button.quantity__counter-plus')
       .click();
-    cy.wait(1000); // Wait for price update
+    cy.wait(1000); 
 });
 
-// Command to get cart item prices
 Cypress.Commands.add('getCartPrices', () => {
     const prices = [];
     return cy.get('.product-cart-wrapper.row').then($items => {
@@ -48,7 +46,6 @@ Cypress.Commands.add('getCartPrices', () => {
     });
 });
 
-// Command to get cart item quantities
 Cypress.Commands.add('getCartQuantities', () => {
     const quantities = [];
     return cy.get('.product-cart-wrapper.row').then($items => {
@@ -60,27 +57,22 @@ Cypress.Commands.add('getCartQuantities', () => {
     });
 });
 
-// Command to get total price from website
 Cypress.Commands.add('getTotalPrice', () => {
     return cy.get('.cart-total__value.cart-total--grand.estimated-total')
       .invoke('text')
       .then(text => parseFloat(text.replace(/[^0-9.]/g, '')));
 });
 
-// Command to click checkout button
 Cypress.Commands.add('clickCheckout', () => {
     cy.get('.checkout__button').click();
 });
 
 
-// Command to fill checkout form
 Cypress.Commands.add('fillCheckoutForm', (userData) => {
-    // Wait for the entire form to be ready/enabled
     cy.get('#email').should('be.enabled');
     cy.get('#shippingFirstNamedefault').should('be.enabled');
     cy.get('#shippingLastNamedefault').should('be.enabled');
     
-    // Now fill the form
     if (userData.email) {
         cy.get('#email').clear().type(userData.email);
     }
@@ -96,26 +88,21 @@ Cypress.Commands.add('fillCheckoutForm', (userData) => {
       if (userData.phone) {
         cy.get('#shippingPhoneNumberdefault').should('be.enabled').clear().type(userData.phone);
     }
-    // Address field may have autocomplete overlay
     if (userData.address) {
         cy.get('#shippingAddressOnedefault').should('be.enabled').clear({ force: true }).type(userData.address, { force: true });
         
-        // Wait for autocomplete suggestions and select the one containing "123 Main Street Anx"
         cy.get('.edq-global-intuitive-address-suggestion', { timeout: 5000 })
           .should('be.visible')
           .contains('123 Main Street Anx')
           .click();
         
-        // Wait for auto-fill to complete
         cy.wait(1000);
     }
     
-    // City field may have autocomplete overlay
     if (userData.city) {
         cy.get('#shippingAddressCitydefault').should('be.enabled').clear({ force: true }).type(userData.city, { force: true });
     }
     
-    // Country/State have pointer-events: none
     if (userData.country) {
         cy.get('#shippingCountrydefault').should('be.enabled').select(userData.country, { force: true });
     }
@@ -124,20 +111,18 @@ Cypress.Commands.add('fillCheckoutForm', (userData) => {
         cy.get('#shippingStatedefault').should('be.enabled').select(userData.state, { force: true });
     }
     
-    // ZIP is disabled until state is selected
-    if (userData.zip) {
-        cy.get('#shippingZipCodedefault').should('be.enabled').clear().type(userData.zip);
-    }
+    // // ZIP is disabled until state is selected
+    // if (userData.zip) {
+    //     cy.get('#shippingZipCodedefault').should('be.enabled').clear().type(userData.zip);
+    // }
     
   
 });
 
-// Command to click continue to payment
 Cypress.Commands.add('clickContinueToPayment', () => {
     cy.get('#form-submit').click();
 });
 
-// Command to check for validation errors
 Cypress.Commands.add('checkValidationError', (fieldType) => {
     const errorSelectors = {
         email: '#emailInvalidMessage',
@@ -150,4 +135,58 @@ Cypress.Commands.add('checkValidationError', (fieldType) => {
     if (errorSelectors[fieldType]) {
         cy.get(errorSelectors[fieldType], { timeout: 3000 }).should('be.visible');
     }
+});
+
+Cypress.Commands.add('writeToExcel', (data) => {
+    const { prices, quantities, calculatedTotal, websiteTotal, fileName } = data;
+    
+    const wb = XLSX.utils.book_new();
+    
+    const excelData = [];
+    
+    excelData.push(['Item #', 'Price', 'Quantity', 'Subtotal', 'Calculated Total', 'Website Total', 'Match', 'Timestamp']);
+    
+    prices.forEach((price, index) => {
+        const qty = quantities[index];
+        const subtotal = price * qty;
+        excelData.push([
+            `Item ${index + 1}`,
+            price,
+            qty,
+            subtotal,
+            '', '', '', ''
+        ]);
+    });
+    
+    const match = Math.abs(calculatedTotal - websiteTotal) < 0.01;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    excelData.push([
+        'TOTAL',
+        '',
+        '',
+        '',
+        calculatedTotal,
+        websiteTotal,
+        match ? 'YES' : 'NO',
+        timestamp
+    ]);
+    
+    const ws = XLSX.utils.aoa_to_sheet(excelData);
+    
+    ws['!cols'] = [
+        { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 },
+        { wch: 15 }, { wch: 15 }, { wch: 8 }, { wch: 20 }
+    ];
+    
+    XLSX.utils.book_append_sheet(wb, ws, 'Cart Price Validation');
+    
+    const reportDir = 'test-reports';
+    const filePath = path.join(reportDir, fileName || `CartPriceValidation_${Date.now()}.xlsx`);
+    
+    cy.task('ensureDir', reportDir);
+    
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
+    cy.task('writeFile', { filePath, data: wbout });
+    
+    cy.log(`✓ Excel report saved: ${filePath}`);
 });

@@ -3,7 +3,7 @@
     "email": "john.doe@example.com",
     "firstName": "John",
     "lastName": "Doe",
-    "address": "123 Main Street",
+    "address": "123 Main Street Anx",
     "city": "New Haven",
     "country": "United States",
     "state": "Connecticut",
@@ -23,5 +23,11 @@
     "headphones": "Headphones",
     "speakers": "Speakers",
     "earbuds": "Earbuds"
-  }
+  },
+  "invalidPhones": [
+    "123",
+    "abcdefghij",
+    "00000000",
+    "111-111"
+]
 }
